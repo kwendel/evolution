@@ -19,7 +19,7 @@ public class SimpleGeneticAlgorithm {
 
     ArrayList<Individual> population;
 
-    SimpleGeneticAlgorithm(int population_size, int m, int k, int d, CrossoverType crossover_type) {
+    SimpleGeneticAlgorithm(int population_size, int m, int k, double d, CrossoverType crossover_type) {
         this.population_size = population_size;
         if (population_size % 2 == 1) {
             System.out.println("Error: population size must be multiple of 2");

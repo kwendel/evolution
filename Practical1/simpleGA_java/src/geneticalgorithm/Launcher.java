@@ -26,7 +26,7 @@ public class Launcher {
 
         // TODO: this runs one experiment, you may want to script a pipeline here.
         int population_size = 100;
-        int m = 8; int k = 5; int d = 1;
+        int m = 8; int k = 5; double d = 1;
         CrossoverType ct = CrossoverType.Uniform;
         int i = 0;
         // Set up logging

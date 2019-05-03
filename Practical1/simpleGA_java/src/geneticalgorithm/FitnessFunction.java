@@ -7,13 +7,14 @@ package geneticalgorithm;
  */
 public class FitnessFunction {
 
-    int m, k, d;
+    int m, k;
+    double d;
     long evaluations;
     double optimum;
 
     Individual elite = null;
 
-    FitnessFunction(int m, int k, int d) {
+    FitnessFunction(int m, int k, double d) {
         this.m = m;
         this.k = k;
         this.d = d;
