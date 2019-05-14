@@ -1,6 +1,8 @@
 
 package geneticalgorithm;
 
+import java.util.Arrays;
+
 /**
  *
  * @author Marco Virgolin, with the collaboration of Anton Bouter and Hoang Ngoc Luong and the supervision of Peter A.N. Bosman
@@ -21,7 +23,7 @@ public class FitnessFunction {
         this.evaluations = 0;
 
 //        this.optimum = m * k;   // TODO: this is the optimum for OneMax, not for your function
-        this.optimum = 1; // The optimal is achieved when u(b) = k and thus fitness=1
+        this.optimum = m; // The optimal is achieved when u(b) = k and thus fitness=1
     }
     
     // The purpose of this custom exception is to perform a naughty trick: halt the GA as soon as the optimum is found
@@ -32,19 +34,20 @@ public class FitnessFunction {
         }
     }
 
-    private double sumGenotype(Individual individual) {
+    private double sumGenotype(int[] genotype) {
         double result = 0;
 
-        for (int i = 0; i < individual.genotype.length; i++) {
-            result += individual.genotype[i];
+        for (int i = 0; i < genotype.length; i++) {
+            result += genotype[i];
         }
 
         return result;
     }
 
-    private double fp1(Individual individual) {
+    private double fp1(int[] genoSubrange) {
         // Compute the sum over the genotype - u(b)
-        double ub = this.sumGenotype(individual);
+//        double ub = this.sumGenotype(individual);
+        double ub = this.sumGenotype(genoSubrange);
 
         // return fitness according to the two cases
         if (ub == this.k) {
@@ -60,7 +63,14 @@ public class FitnessFunction {
         
         // Compute the fitness of the individual
 //        double result = this.sumGenotype(individual); // OneMax -- counts 1s
-        double result = this.fp1(individual); // practical 1 fitness
+
+
+        // Practical 1 fitness
+        double result = 0;
+        for (int i = 0; i < this.m; i++) {
+            int[] subrange = Arrays.copyOfRange(individual.genotype, i * this.k, i * this.k + this.k - 1);
+            result += this.fp1(subrange);
+        }
 
         // set the fitness of the individual
         individual.fitness = result;

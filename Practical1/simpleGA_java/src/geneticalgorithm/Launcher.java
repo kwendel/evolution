@@ -26,8 +26,9 @@ public class Launcher {
 
         // TODO: this runs one experiment, you may want to script a pipeline here.
         int population_size = 100;
-        int m = 8; int k = 5; double d = 1;
-        CrossoverType ct = CrossoverType.Uniform;
+        int m = 3; int k = 3; double d = (1.0/k);
+//        CrossoverType ct = CrossoverType.Uniform;
+        CrossoverType ct = CrossoverType.OnePoint;
         int i = 0;
         // Set up logging
         String output_file_name = "experiments/log_p" + population_size + "_m" + m + "_k" + k + "_d" + d + "_c" + ct + "_run" + i + ".txt";
