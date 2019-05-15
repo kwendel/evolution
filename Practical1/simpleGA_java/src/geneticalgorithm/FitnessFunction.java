@@ -34,7 +34,7 @@ public class FitnessFunction {
         }
     }
 
-    private double sumGenotype(int[] genotype) {
+    public double sumGenotype(int[] genotype) {
         double result = 0;
 
         for (int i = 0; i < genotype.length; i++) {
@@ -44,7 +44,7 @@ public class FitnessFunction {
         return result;
     }
 
-    private double fp1(int[] genoSubrange) {
+    public double fp1(int[] genoSubrange) {
         // Compute the sum over the genotype - u(b)
 //        double ub = this.sumGenotype(individual);
         double ub = this.sumGenotype(genoSubrange);

@@ -1,20 +1,41 @@
-import seaborn as sns
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 import glob
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 experiments = '../experiments/'
 
 
-def read_last_line(file):
+def read_line(file, idx):
     try:
         with open(file) as f:
             lines = f.readlines()
-            return lines[-1]
+            return lines[idx]
     except FileNotFoundError as e:
         print(e)
+
+
+def read_last_eval(file):
+    return read_line(file, -1)
+
+
+def read_genotype(file):
+    ct = -1
+
+    if 'OnePoint' in file:
+        ct = 0
+    elif 'Uniform' in file:
+        ct = 1
+
+    data = read_line(file, -1).replace("\n", "").split(sep=" ")
+    result = {
+        'genotype': data[0],
+        'zeros': int(data[1]),
+        'ones': int(data[2]),
+        'ct': ct
+    }
+    return result
 
 
 def read_file(name):
@@ -24,7 +45,7 @@ def read_file(name):
     elif 'Uniform' in name:
         ct = 1
 
-    data = read_last_line(name).replace("\n", "").split(sep=" ")
+    data = read_last_eval(name).replace("\n", "").split(sep=" ")
     result = {
         'gen': int(data[0]),
         'evals': int(data[1]),
@@ -90,17 +111,88 @@ def plot_popsize(runs=10, settings={}, y='gen', yname='Number of generations', t
     plt.show()
 
 
-if __name__ == '__main__':
+def print_counts(settings):
+    result = []
+    runs = glob.glob(
+        f"{experiments}log_p{settings['p']}_m{settings['m']}_k{settings['k']}_d{settings['d']}_c*_run*.txt")
+
+    for r in runs:
+        result.append(read_genotype(r))
+
+    df = pd.DataFrame(result)
+    onepoint = df[df['ct'] == 0]
+    uniform = df[df['ct'] == 1]
+
+    def __printer(df, ct):
+        print(f"## Counts - d={settings['d']} - {ct}")
+        print(f"Zeros: {df['zeros'].mean()}")
+        print(f"Ones: {df['ones'].mean()}")
+
+    __printer(onepoint, 'Onepoint')
+    __printer(uniform, 'Uniform')
+
+
+def analyse_d():
     pops = [2]
-    pops.extend(range(10, 120, 10))
+    pops.extend(range(10, 210, 10))
+
+    runs = 100
+    k = 10
     settings = {
         'p': pops,
-        'm': 16,
+        'm': 4,
+        'k': k,
+        'd': 0.0
+    }
+    # Analyze the best fitness that is founded for different population sizes
+    # plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
+    #              title='Best fitness with d = 0')
+    #
+    # settings['d'] = 1.0 / k
+    # plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
+    #              title='Best fitness with d = 1/k')
+    # settings['d'] = 1.0 - (1.0 / k)
+    # plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
+    #              title='Best fitness with d = 1 - 1/k')
+
+    # Analyze the amount of zeros vs ones for a specific population size
+    settings['p'] = 200
+    settings['d'] = 0.0
+    print_counts(settings)
+    settings['d'] = 1.0 / k
+    print_counts(settings)
+    settings['d'] = 1.0 - (1.0 / k)
+    print_counts(settings)
+    settings['d'] = 1.0
+    print_counts(settings)
+
+
+def analyse_popsize():
+    pops = [2]
+    pops.extend(range(10, 210, 10))
+    settings = {
+        'p': pops,
+        'm': 4,
         'k': 5,
-        'd': 0.2
     }
 
-    plot_popsize(runs=10, settings=settings, y='gen', yname='Number of generations',
-                 title='Influence of population size')
-    plot_popsize(runs=10, settings=settings, y='best_fitness', yname='Best fitness',
-                 title='Influence of population size')
+    runs = 100
+    settings['d'] = 1.0 / 5.0
+    plot_popsize(runs, settings, y='best_fitness', yname='Best fitness',
+                 title=f"Fitness after termination condition with {settings['d']}")
+    plot_popsize(runs, settings, y='evals', yname='Number of evaluation',
+                 title=f"Evaluations after termination condition with {settings['d']}")
+    plot_popsize(runs, settings, y='gen', yname='Number of generations',
+                 title=f"Generations after termination condition with {settings['d']}")
+    settings['d'] = 1 - (1.0 / 5.0)
+    plot_popsize(runs, settings, y='evals', yname='Number of evaluation',
+                 title=f"Evaluations after termination condition with {settings['d']}")
+    plot_popsize(runs, settings, y='gen', yname='Number of generations',
+                 title=f"Generations after termination condition with {settings['d']}")
+    plot_popsize(runs, settings, y='best_fitness', yname='Best fitness',
+                 title=f"Fitness after termination condition with {settings['d']}")
+
+
+if __name__ == '__main__':
+    # analyse_d()
+    analyse_popsize()
