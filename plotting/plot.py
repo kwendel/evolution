@@ -69,14 +69,20 @@ def plot_popsize(runs=10, settings={}, y='gen', yname='Number of generations', t
         plt.scatter(np.full(runs, fill_value=p), onepoint[y], color=pallete(0))
         plt.scatter(np.full(runs, fill_value=p), uniform[y], color=pallete(1))
 
+    legend = []
     if y == 'best_fitness':
         ms = np.full(len(ps), fill_value=settings['m'])
         plt.plot(ps, ms, color=pallete(2), linestyle='--')
 
+        legend.append('Optimum')
+
     plt.plot(ps, avg_one, color=pallete(0))
     plt.plot(ps, avg_uni, color=pallete(1))
 
-    plt.legend(['Optimum', 'Onepoint', 'Uniform'], loc='lower right')
+    legend.append('Onepoint')
+    legend.append('Uniform')
+
+    plt.legend(legend, loc='lower right')
     plt.title(title)
     plt.xlim(left=2)
     plt.ylabel(yname)
