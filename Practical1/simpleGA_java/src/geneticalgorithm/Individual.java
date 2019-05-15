@@ -1,6 +1,8 @@
 
 package geneticalgorithm;
 
+import java.util.Arrays;
+
 /**
  *
  * @author Marco Virgolin, with the collaboration of Anton Bouter and Hoang Ngoc Luong and the supervision of Peter A.N. Bosman
@@ -35,4 +37,15 @@ public class Individual {
         return genotype_string;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+
+        if (!(obj instanceof Individual)) {
+            return false;
+        }
+
+        Individual other = ((Individual) obj);
+        return Arrays.equals(this.genotype, other.genotype);
+    }
 }
