@@ -68,7 +68,7 @@ public class FitnessFunction {
         // Practical 1 fitness
         double result = 0;
         for (int i = 0; i < this.m; i++) {
-            int[] subrange = Arrays.copyOfRange(individual.genotype, i * this.k, i * this.k + this.k - 1);
+            int[] subrange = Arrays.copyOfRange(individual.genotype, i * this.k, i * this.k + this.k);
             result += this.fp1(subrange);
         }
 
