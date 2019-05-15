@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 import glob
 
+experiments = '../experiments/'
 
 
 def read_last_line(file):
@@ -17,29 +17,26 @@ def read_last_line(file):
         print(e)
 
 
-def compare_popsize(settings):
-    experiments = '../experiments/'
-
-    ps = [2, 10, 100]
+def read_popsize(settings):
     result = {}
 
-    for p in ps:
+    for p in settings['p']:
         result[p] = []
-        runs = glob.glob(f"{experiments}log_p{p}{settings}_run*.txt")
+        runs = glob.glob(f"{experiments}log_p{p}_m{settings['m']}_k{settings['k']}_d{settings['d']}_c*_run*.txt")
 
         for r in runs:
-            ct = ''
+            ct = -1
             if 'OnePoint' in r:
                 ct = 0
             elif 'Uniform' in r:
                 ct = 1
 
-            data = read_last_line(r).split(sep=" ")
+            data = read_last_line(r).replace("\n", "").split(sep=" ")
             result[p].append({
-                'gen': data[0],
-                'evals': data[1],
-                'time': data[2],
-                'best_fitness': data[3],
+                'gen': int(data[0]),
+                'evals': int(data[1]),
+                'time': int(data[2]),
+                'best_fitness': float(data[3]),
                 'ct': ct
             })
         result[p] = pd.DataFrame(result[p])
@@ -47,32 +44,51 @@ def compare_popsize(settings):
     return result
 
 
-def plot_popsize(dfs, y='gen',yname='Number of generations', runs=1):
+def plot_popsize(runs=10, settings={}, y='gen', yname='Number of generations', title='Title'):
+    dfs = read_popsize(settings)
+    ps = settings['p']
+
     plt.style.use('seaborn-darkgrid')
-    fig = plt.figure() #figsize=(13,10), dpi=100)
+    fig = plt.figure()  # figsize=(13,10), dpi=100)
     pallete = plt.get_cmap('tab10')
 
-    ps = []
     avg_one = []
     avg_uni = []
     for p, df in dfs.items():
-        ps.append(p)
-        avg_one.append(df[df['ct'] == 0][y].mean())
-        avg_uni.append(df[df['ct'] == 1][y].mean())
-        plt.scatter(np.full(runs,fill_value=p), df[y], color=pallete(df['ct']) )
+        onepoint = df[df['ct'] == 0]
+        uniform = df[df['ct'] == 1]
+        avg_one.append(onepoint[y].mean())
+        avg_uni.append(uniform[y].mean())
 
-    # plt.plot(ps, avg_one, color=pallete(0))
-    # plt.plot(ps, avg_uni, color=pallete(1))
+        plt.scatter(np.full(runs, fill_value=p), onepoint[y], color=pallete(0))
+        plt.scatter(np.full(runs, fill_value=p), uniform[y], color=pallete(1))
 
-    plt.title("Plot")
+    if y == 'best_fitness':
+        ms = np.full(len(ps), fill_value=settings['m'])
+        plt.plot(ps, ms, color=pallete(2), linestyle='--')
+
+    plt.plot(ps, avg_one, color=pallete(0))
+    plt.plot(ps, avg_uni, color=pallete(1))
+
+    plt.legend(['Optimum','Onepoint', 'Uniform'], loc='lower right')
+    plt.title(title)
     plt.xlim(left=2)
     plt.ylabel(yname)
     plt.xlabel("Population size")
     plt.show()
 
 
-
-
 if __name__ == '__main__':
-    res = compare_popsize("_m8_k10_d0.0_cOnePoint")
-    plot_popsize(res, y='gen')
+    pops = [2]
+    pops.extend(range(10, 120, 10))
+    settings = {
+        'p': pops,
+        'm': 16,
+        'k': 5,
+        'd': 0.2
+    }
+
+    plot_popsize(runs=10, settings=settings, y='gen', yname='Number of generations',
+                 title='Influence of population size')
+    plot_popsize(runs=10, settings=settings, y='best_fitness', yname='Best fitness',
+                 title='Influence of population size')
