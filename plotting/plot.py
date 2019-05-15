@@ -17,6 +17,25 @@ def read_last_line(file):
         print(e)
 
 
+def read_file(name):
+    ct = -1
+    if 'OnePoint' in name:
+        ct = 0
+    elif 'Uniform' in name:
+        ct = 1
+
+    data = read_last_line(name).replace("\n", "").split(sep=" ")
+    result = {
+        'gen': int(data[0]),
+        'evals': int(data[1]),
+        'time': int(data[2]),
+        'best_fitness': float(data[3]),
+        'ct': ct
+    }
+
+    return result
+
+
 def read_popsize(settings):
     result = {}
 
@@ -25,20 +44,7 @@ def read_popsize(settings):
         runs = glob.glob(f"{experiments}log_p{p}_m{settings['m']}_k{settings['k']}_d{settings['d']}_c*_run*.txt")
 
         for r in runs:
-            ct = -1
-            if 'OnePoint' in r:
-                ct = 0
-            elif 'Uniform' in r:
-                ct = 1
-
-            data = read_last_line(r).replace("\n", "").split(sep=" ")
-            result[p].append({
-                'gen': int(data[0]),
-                'evals': int(data[1]),
-                'time': int(data[2]),
-                'best_fitness': float(data[3]),
-                'ct': ct
-            })
+            result[p].append(read_file(r))
         result[p] = pd.DataFrame(result[p])
 
     return result
@@ -70,7 +76,7 @@ def plot_popsize(runs=10, settings={}, y='gen', yname='Number of generations', t
     plt.plot(ps, avg_one, color=pallete(0))
     plt.plot(ps, avg_uni, color=pallete(1))
 
-    plt.legend(['Optimum','Onepoint', 'Uniform'], loc='lower right')
+    plt.legend(['Optimum', 'Onepoint', 'Uniform'], loc='lower right')
     plt.title(title)
     plt.xlim(left=2)
     plt.ylabel(yname)
