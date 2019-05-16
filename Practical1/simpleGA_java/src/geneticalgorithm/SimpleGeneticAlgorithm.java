@@ -52,7 +52,7 @@ public class SimpleGeneticAlgorithm {
         // L3: Evolutionary loop
         while (!CheckTerminationCondition(generation_limit, evaluations_limit, time_limit)) {
             
-            System.out.println("> Generation "+generation+" - best fitness found: "+fitness_function.elite.fitness);
+//            System.out.println("> Generation "+generation+" - best fitness found: "+fitness_function.elite.fitness);
             
             // L3.1: Prepare offspring
             ArrayList<Individual> offspring = new ArrayList<>();
@@ -84,13 +84,16 @@ public class SimpleGeneticAlgorithm {
     private boolean CheckTerminationCondition(int generation_limit, long evaluations_limit, long time_limit) {
 
         if (generation_limit > 0 && generation >= generation_limit) {
+            System.out.println("Generation limit reached");
             return true;
         }
         if (evaluations_limit > 0 && fitness_function.evaluations >= evaluations_limit) {
+            System.out.println("Evaluations limit reached");
             return true;
         }
         long elapsed_time = System.currentTimeMillis() - start_time;
         if (time_limit > 0 && elapsed_time >= time_limit) {
+            System.out.println("Time limit reached");
             return true;
         }
 
@@ -99,7 +102,11 @@ public class SimpleGeneticAlgorithm {
             equals = population.get(i - 1).equals(population.get(i));
             if (!equals) break;
         }
-        return equals;
+        if (equals) {
+            System.out.println("All genotypes are equal");
+            return true;
+        }
+        return false;
     }
 
 }

@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * @author Marco Virgolin, with the collaboration of Anton Bouter and Hoang Ngoc Luong and the supervision of Peter A.N. Bosman
@@ -15,53 +17,100 @@ public class Launcher {
     private static final long time_limit = 3 * 1000; // in milliseconds
     private static final int generations_limit = -1;
     private static final long evaluations_limit = -1;
-    private static final int runs = 25;
+    private static int runs = 100;
 
-    private CalcD[] ds = new CalcD[]{
-//            k -> 0,
-            k -> 1.0 / k,
-//            k -> 1.0 - 1.0 / k,
-//            k -> 1
-    };
-    //    private int[] ks = new int[]{3, 5, 10};
-    private int[] ks = new int[]{10};
-    //    private int[] ms = new int[]{1, 2, 4, 8, 16};
-    private int[] ms = new int[]{8};
-    //    private int[] ns = new int[]{2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190
-//            ,200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400};
-    private int[] ns = new int[]{2, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000};
-    //    private int[] ns = new int[]{200};
-    private CrossoverType[] cts = new CrossoverType[]{CrossoverType.OnePoint, CrossoverType.Uniform};
+    private ArrayList<Experiment> dingen;
+
+    public Launcher() {
+        int[] all_ps = {2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200};
+        CalcD k_0 = k -> 0;
+        CalcD k_1_k = k -> 1.0 / k;
+        CalcD k_1_1_k = k -> 1.0 - 1.0 / k;
+        CalcD k_1 = k -> 1;
+
+        dingen = new ArrayList<>();
+
+        // analyze_d
+        int k = 10;
+        dingen.addAll(Experiment.combinations(
+                new CalcD[]{k_0, k_1_k, k_1_1_k},
+                new int[]{k},
+                new int[]{4},
+                all_ps
+        ));
+        dingen.add(new Experiment(k_0, k, 4, 200));
+        dingen.add(new Experiment(k_1_k, k, 4, 200));
+        dingen.add(new Experiment(k_1_1_k, k, 4, 200));
+        dingen.add(new Experiment(k_1, k, 4, 200));
+
+        // analyze_popsize
+        dingen.addAll(Experiment.combinations(
+                new CalcD[]{k_1_k},
+                new int[]{5},
+                new int[]{2},
+                all_ps
+        ));
+        dingen.addAll(Experiment.combinations(
+                new CalcD[]{k_1_k},
+                new int[]{10},
+                new int[]{8},
+                all_ps
+        ));
+
+        // analyze_popsize_big
+        dingen.addAll(Experiment.combinations(
+                new CalcD[]{k_1_k},
+                new int[]{10},
+                new int[]{8},
+                Arrays.stream(all_ps).map(p -> p > 2 ? p * 10 : p).toArray() // [2, 100, 200, ..., 2000]
+        ));
+
+        // analyze_m_k
+        dingen.addAll(Experiment.combinations(
+                new CalcD[]{k_1_k},
+                new int[]{3, 5, 10, 50},
+                new int[]{1, 2, 4, 8, 16},
+                new int[]{20}
+        ));
+//
+//        // analyze_m_k_2
+        dingen.add(new Experiment(k_1_k, 2, 10, 20));
+        dingen.add(new Experiment(k_1_k, 10, 2, 20));
+        dingen.add(new Experiment(k_1_k, 2, 30, 20));
+        dingen.add(new Experiment(k_1_k, 30, 2, 20));
+        dingen.add(new Experiment(k_1_k, 2, 50, 20));
+        dingen.add(new Experiment(k_1_k, 50, 2, 20));
+        dingen.add(new Experiment(k_1_k, 10, 15, 20));
+        dingen.add(new Experiment(k_1_k, 15, 10, 20));
+        dingen.add(new Experiment(k_1_k, 15, 30, 20));
+        dingen.add(new Experiment(k_1_k, 30, 15, 20));
+    }
 
     public static void main(String[] args) throws IOException {
         new Launcher().run();
     }
 
     private void run() throws IOException {
-        File directory = new File("experiments_big");
+        File directory = new File("experiments");
         if (!directory.exists()) {
             directory.mkdir();
         }
 
-        for (int k : ks) {
-            for (int m : ms) {
-                for (CalcD calcD : ds) {
-                    double d = calcD.d(k);
-                    for (int n : ns) {
-                        for (CrossoverType ct : cts) {
-                            runSingle(n, m, k, d, ct);
-                        }
-                    }
-                }
-            }
+        for (Experiment experiment : dingen) {
+            runSingle(experiment, CrossoverType.OnePoint);
+            runSingle(experiment, CrossoverType.Uniform);
         }
-//        runSingle(10, 3, 5, 1.0/3, CrossoverType.Uniform);
     }
 
-    private void runSingle(int population_size, int m, int k, double d, CrossoverType ct) throws IOException {
+    private void runSingle(Experiment experiment, CrossoverType ct) throws IOException {
+        int population_size = experiment.p;
+        int m = experiment.m;
+        int k = experiment.k;
+        double d = experiment.d;
+
         for (int i = 0; i < runs; i++) {
             // Set up logging
-            String output_file_name = "experiments_big/log_p" + population_size + "_m" + m + "_k" + k + "_d" + d + "_c" + ct + "_run" + i + ".txt";
+            String output_file_name = "experiments/log_p" + population_size + "_m" + m + "_k" + k + "_d" + d + "_c" + ct + "_run" + i + ".txt";
             Files.deleteIfExists(new File(output_file_name).toPath());
             Utilities.logger = new BufferedWriter(new FileWriter(output_file_name, true));
             Utilities.logger.write("gen evals time best_fitness\n");
@@ -90,9 +139,5 @@ public class Launcher {
                 Utilities.logger.close();
             }
         }
-    }
-
-    interface CalcD {
-        double d(int k);
     }
 }
