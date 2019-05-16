@@ -17,7 +17,7 @@ def read_line(file, idx):
 
 
 def read_last_eval(file):
-    return read_line(file, -1)
+    return read_line(file, -2)
 
 
 def read_genotype(file):
@@ -145,15 +145,15 @@ def analyse_d():
         'd': 0.0
     }
     # Analyze the best fitness that is founded for different population sizes
-    # plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
-    #              title='Best fitness with d = 0')
-    #
-    # settings['d'] = 1.0 / k
-    # plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
-    #              title='Best fitness with d = 1/k')
-    # settings['d'] = 1.0 - (1.0 / k)
-    # plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
-    #              title='Best fitness with d = 1 - 1/k')
+    plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
+                 title='Best fitness with d = 0')
+
+    settings['d'] = 1.0 / k
+    plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
+                 title='Best fitness with d = 1/k')
+    settings['d'] = 1.0 - (1.0 / k)
+    plot_popsize(runs=runs, settings=settings, y='best_fitness', yname='Best fitness',
+                 title='Best fitness with d = 1 - 1/k')
 
     # Analyze the amount of zeros vs ones for a specific population size
     settings['p'] = 200
@@ -172,27 +172,46 @@ def analyse_popsize():
     pops.extend(range(10, 210, 10))
     settings = {
         'p': pops,
-        'm': 4,
+        'm': 2,
         'k': 5,
     }
 
     runs = 100
-    settings['d'] = 1.0 / 5.0
+    settings['d'] = 1.0 / settings['k']
     plot_popsize(runs, settings, y='best_fitness', yname='Best fitness',
-                 title=f"Fitness after termination condition with {settings['d']}")
+                 title=f"Fitness after termination condition")
     plot_popsize(runs, settings, y='evals', yname='Number of evaluation',
-                 title=f"Evaluations after termination condition with {settings['d']}")
+                 title=f"Evaluations after termination condition")
     plot_popsize(runs, settings, y='gen', yname='Number of generations',
-                 title=f"Generations after termination condition with {settings['d']}")
-    settings['d'] = 1 - (1.0 / 5.0)
+                 title=f"Generations after termination condition")
+
+    settings['m'] = 8
+    settings['k'] = 10
+    settings['d'] = 1.0 / settings['k']
     plot_popsize(runs, settings, y='evals', yname='Number of evaluation',
-                 title=f"Evaluations after termination condition with {settings['d']}")
+                 title=f"Evaluations after termination condition")
     plot_popsize(runs, settings, y='gen', yname='Number of generations',
-                 title=f"Generations after termination condition with {settings['d']}")
+                 title=f"Generations after termination condition")
     plot_popsize(runs, settings, y='best_fitness', yname='Best fitness',
-                 title=f"Fitness after termination condition with {settings['d']}")
+                 title=f"Fitness after termination condition")
+
+
+def analyse_popsize_big():
+    pops = [2]
+    pops.extend(range(100, 2100, 100))
+    settings = {'p': pops, 'm': 8, 'k': 10, 'd': 0.1}
+    runs = 25
+
+    plot_popsize(runs, settings, y='evals', yname='Number of evaluation',
+                 title=f"Evaluations after termination condition")
+    plot_popsize(runs, settings, y='gen', yname='Number of generations',
+                 title=f"Generations after termination condition")
+    plot_popsize(runs, settings, y='best_fitness', yname='Best fitness',
+                 title=f"Fitness after termination condition")
+
 
 
 if __name__ == '__main__':
     # analyse_d()
-    analyse_popsize()
+    # analyse_popsize()
+    analyse_popsize_big()

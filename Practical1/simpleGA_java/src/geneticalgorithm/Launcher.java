@@ -15,20 +15,22 @@ public class Launcher {
     private static final long time_limit = 3 * 1000; // in milliseconds
     private static final int generations_limit = -1;
     private static final long evaluations_limit = -1;
-    private static final int runs = 100;
+    private static final int runs = 25;
 
     private CalcD[] ds = new CalcD[]{
-            k -> 0,
+//            k -> 0,
             k -> 1.0 / k,
-            k -> 1.0 - 1.0 / k,
-            k -> 1
+//            k -> 1.0 - 1.0 / k,
+//            k -> 1
     };
-//    private int[] ks = new int[]{3, 5, 10};
+    //    private int[] ks = new int[]{3, 5, 10};
     private int[] ks = new int[]{10};
-//    private int[] ms = new int[]{1, 2, 4, 8, 16};
-    private int[] ms = new int[]{4};
-//    private int[] ns = new int[]{2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200};
-    private int[] ns = new int[]{200};
+    //    private int[] ms = new int[]{1, 2, 4, 8, 16};
+    private int[] ms = new int[]{8};
+    //    private int[] ns = new int[]{2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190
+//            ,200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400};
+    private int[] ns = new int[]{2, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000};
+    //    private int[] ns = new int[]{200};
     private CrossoverType[] cts = new CrossoverType[]{CrossoverType.OnePoint, CrossoverType.Uniform};
 
     public static void main(String[] args) throws IOException {
@@ -36,7 +38,7 @@ public class Launcher {
     }
 
     private void run() throws IOException {
-        File directory = new File("experiments");
+        File directory = new File("experiments_big");
         if (!directory.exists()) {
             directory.mkdir();
         }
@@ -59,7 +61,7 @@ public class Launcher {
     private void runSingle(int population_size, int m, int k, double d, CrossoverType ct) throws IOException {
         for (int i = 0; i < runs; i++) {
             // Set up logging
-            String output_file_name = "experiments/log_p" + population_size + "_m" + m + "_k" + k + "_d" + d + "_c" + ct + "_run" + i + ".txt";
+            String output_file_name = "experiments_big/log_p" + population_size + "_m" + m + "_k" + k + "_d" + d + "_c" + ct + "_run" + i + ".txt";
             Files.deleteIfExists(new File(output_file_name).toPath());
             Utilities.logger = new BufferedWriter(new FileWriter(output_file_name, true));
             Utilities.logger.write("gen evals time best_fitness\n");
@@ -80,7 +82,7 @@ public class Launcher {
                         + "elite\t\t" + ga.fitness_function.elite.toString());
                 Utilities.logger.write(ga.generation + " " + ga.fitness_function.evaluations + " " + (System.currentTimeMillis() - ga.start_time) + " " + ga.fitness_function.elite.fitness + "\n");
             } finally {
-                int ones = (int)ga.fitness_function.sumGenotype(ga.fitness_function.elite.genotype);
+                int ones = (int) ga.fitness_function.sumGenotype(ga.fitness_function.elite.genotype);
                 int zeros = ga.fitness_function.elite.genotype.length;
                 zeros = zeros - ones;
 
