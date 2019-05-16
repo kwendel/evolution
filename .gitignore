@@ -29,5 +29,5 @@ hs_err_pid*
 experiments
 
 # omdat thieu zeurt
-plotting/*.iml
-
+*.iml
+.DS_Store
